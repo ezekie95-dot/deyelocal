@@ -4,6 +4,11 @@ struct DeviceListView: View {
     @Environment(DeviceStore.self) private var store
     @State private var editing: MicroDevice?
     @State private var showingNew = false
+    @State private var showingSetup = false
+    @State private var showingDashboard = false
+    @State private var startAfterSetup = false
+    /// Solo se abre automáticamente una vez por arranque de la app.
+    private static var didAutoStart = false
 
     var body: some View {
         NavigationStack {
@@ -39,7 +44,11 @@ struct DeviceListView: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    if !store.devices.isEmpty {
+                        Button { showingSetup = true } label: { Image(systemName: "rectangle.grid.2x2") }
+                            .accessibilityLabel("Modo tablet")
+                    }
                     Button { showingNew = true } label: { Image(systemName: "plus") }
                         .accessibilityLabel("Añadir micro")
                 }
@@ -52,6 +61,23 @@ struct DeviceListView: View {
             }
             .sheet(item: $editing) { device in
                 DeviceEditView(device: device) { store.upsert($0) }
+            }
+            .sheet(isPresented: $showingSetup, onDismiss: {
+                if startAfterSetup {
+                    startAfterSetup = false
+                    showingDashboard = true
+                }
+            }) {
+                DashboardSetupView { startAfterSetup = true }
+            }
+        }
+        .fullScreenCover(isPresented: $showingDashboard) {
+            TabletDashboardView(devices: store.dashboardDevices)
+        }
+        .onAppear {
+            if !Self.didAutoStart, store.autoStartDashboard, !store.dashboardDevices.isEmpty {
+                Self.didAutoStart = true
+                showingDashboard = true
             }
         }
     }
