@@ -1,0 +1,53 @@
+# Compila, pasa los tests y genera un .ipa SIN FIRMAR.
+# No necesita cuenta de Apple Developer: el .ipa se puede firmar e instalar
+# con Sideloadly o AltStore usando un Apple ID gratuito (caduca a los 7 días).
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar XcodeGen y generar proyecto
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Versión de Xcode
+        run: xcodebuild -version
+
+      - name: Tests (simulador)
+        run: |
+          SIM=$(xcrun simctl list devices available | grep -m1 -oE "iPhone [0-9]+[^()]*" | sed 's/ *$//')
+          echo "Simulador: $SIM"
+          xcodebuild test \
+            -project DeyeLocal.xcodeproj -scheme DeyeLocal \
+            -destination "platform=iOS Simulator,name=$SIM" \
+            CODE_SIGNING_ALLOWED=NO | tee test.log | grep -E "Test Case|error:|\*\* TEST" || true
+          grep -q "\*\* TEST SUCCEEDED \*\*" test.log
+
+      - name: Compilar para iPhone (sin firmar)
+        run: |
+          xcodebuild build \
+            -project DeyeLocal.xcodeproj -scheme DeyeLocal \
+            -configuration Release -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" | tail -20
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/DeyeLocal.app Payload/
+          zip -qr DeyeLocal-unsigned.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DeyeLocal-unsigned-ipa
+          path: DeyeLocal-unsigned.ipa
+          retention-days: 30
