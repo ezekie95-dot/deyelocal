@@ -1,0 +1,14 @@
+*.xcodeproj
+build/
+DerivedData/
+Payload/
+*.ipa
+*.p12
+*.mobileprovision
+*.key
+*.csr
+*.cer
+*.pem
+.DS_Store
+xcuserdata/
+__pycache__/
