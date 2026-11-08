@@ -12,6 +12,18 @@ App nativa de iOS (SwiftUI) para monitorizar y controlar **microinversores Deye 
 - **Encendido/apagado remoto** (registro 43)
 - **Límite de potencia activa** 0–100 % (registro 40)
 - Se actualiza solo cada 10 s, y también deslizando hacia abajo para recargar
+- **Modo tablet** para iPad: panel a pantalla completa con la potencia total, la curva del día y una tarjeta por micro con sus 4 paneles
+
+## Modo tablet (iPad)
+
+En la lista de micros, pulsa el botón de cuadrícula (arriba a la derecha) y marca los micros que quieres ver; salen en el orden en que los marques. Después pulsa **Abrir**.
+
+- Muestra la producción total (anillo con la potencia respecto a la nominal), la energía de hoy, el pico del día y el total acumulado.
+- Dibuja la curva de potencia del día, con un punto por minuto mientras el modo tablet está abierto. Se guarda aunque cierres la app y se reinicia cada día.
+- Cada micro tiene su tarjeta con potencia, barras por panel (PV1–PV4), energía de hoy, temperatura, tensión de red y avisos.
+- Solo muestra datos: no se puede encender, apagar ni limitar desde aquí.
+- La pantalla no se apaga mientras está abierto. Con la opción **Abrir en modo tablet al iniciar**, el iPad arranca directamente en el panel.
+- Para salir, pulsa la X de arriba a la derecha.
 
 ## Estructura
 
@@ -19,7 +31,7 @@ App nativa de iOS (SwiftUI) para monitorizar y controlar **microinversores Deye 
 DeyeLocal/
   Protocol/   ModbusRTU.swift, SolarmanV5.swift (tramas), SolarmanClient.swift (TCP)
   Model/      mapa de registros G4, servicio, almacenamiento, view model
-  Views/      lista, detalle, alta/edición
+  Views/      lista, detalle, alta/edición, modo tablet
 DeyeLocalTests/   tests con vectores generados con pysolarmanv5
 tools/mock_logger.py   simulador de logger + micro para pruebas
 project.yml       proyecto XcodeGen (el .xcodeproj se genera solo)
